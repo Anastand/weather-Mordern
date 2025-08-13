@@ -6,24 +6,22 @@ function App() {
   const [searhCity, setSearhCity] = useState<any | null>(null);
   const [weatherData, setWeatherData] = useState<any>(null);
   const [error, setError] = useState<null>(null);
+  const [searchedterm, SetSearchedTerm] = useState<any>("");
 
-  useEffect(() => {
-    // this function fetches the data of the searched city
-    const geocode = async () => {
-      try {
-        const geocodeCity = await fetchViaGeocoding("delhi");
-        const checkvalue = geocodeCity;
-        console.log(checkvalue.name);
-        setSearhCity(checkvalue);
-      } catch (error) {
-        setError(error);
-        console.log(
-          `the func has failed to get geocode with following error : ${error}`
-        );
-      }
-    };
-    geocode();
-  }, []);
+  // this function fetches the data of the searched city
+  const geocode = async () => {
+    try {
+      const geocodeCity = await fetchViaGeocoding(searchedterm);
+      const checkvalue = geocodeCity;
+      console.log(checkvalue.name);
+      setSearhCity(checkvalue);
+    } catch (error) {
+      setError(error);
+      console.log(
+        `the func has failed to get geocode with following error : ${error}`
+      );
+    }
+  };
 
   useEffect(() => {
     // this works to get long and lat data from the searched city as to display weather
@@ -45,11 +43,34 @@ function App() {
     };
     console.log(longi);
     console.log(lati);
-    getWeather(lati,longi);
+    getWeather(lati, longi);
   }, [searhCity]);
+
+  const handelCitySearch = (e) => {
+    e.preventDefault();
+    if (!searchedterm) return;
+    try {
+      geocode();
+    } catch (error) {
+      setError(error);
+      console.log(
+        `the func has failed to get geocode with following error : ${error}`
+      );
+    }
+  };
+
   return (
     <>
       <div>
+        <form type="submit" onSubmit={handelCitySearch}>
+          <input
+            type="text"
+            placeholder="Enter City"
+            value={searchedterm}
+            onChange={(e) => SetSearchedTerm(e.target.value)}
+          />
+          <button type="submit">Search</button>
+        </form>
         <h1 className="text-2xl">hellow orld </h1>
       </div>
     </>
