@@ -1,28 +1,52 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { fetchViaGeocoding } from "./services/api";
+import { cityWeather, fetchViaGeocoding } from "./services/api";
 
 function App() {
-  const [searhCity, setSearhCity] = useState < any | null > (null);
+  const [searhCity, setSearhCity] = useState<any | null>(null);
+  const [weatherData, setWeatherData] = useState<any>(null);
   const [error, setError] = useState<null>(null);
 
   useEffect(() => {
-    const getCityweather=()=>{}
+    // this function fetches the data of the searched city
+    const geocode = async () => {
+      try {
+        const geocodeCity = await fetchViaGeocoding("delhi");
+        const checkvalue = geocodeCity;
+        console.log(checkvalue.name);
+        setSearhCity(checkvalue);
+      } catch (error) {
+        setError(error);
+        console.log(
+          `the func has failed to get geocode with following error : ${error}`
+        );
+      }
+    };
     geocode();
   }, []);
-  const geocode = async () => {
-    try {
-      const geocodeCity = await fetchViaGeocoding("delhi");
-      const checkvalue = geocodeCity;
-      console.log(checkvalue.name);
-      setSearhCity;
-    } catch (error) {
-      setError(error);
-      console.log(
-        `the func has failed to get geocode with following error : ${error}`
-      );
-    }
-  };
+
+  useEffect(() => {
+    // this works to get long and lat data from the searched city as to display weather
+    console.log("here");
+    if (!searhCity) return;
+    const lati = Number(searhCity.latitude);
+    const longi = Number(searhCity.longitude);
+    const getWeather = async (lati, longi) => {
+      try {
+        const response = await cityWeather(lati, longi);
+        const checkv2 = response;
+        console.log(checkv2);
+      } catch (error) {
+        setError(error);
+        console.log(
+          `the func has failed to get geocode with following error : ${error}`
+        );
+      }
+    };
+    console.log(longi);
+    console.log(lati);
+    getWeather(lati,longi);
+  }, [searhCity]);
   return (
     <>
       <div>
