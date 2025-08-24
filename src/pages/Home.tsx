@@ -7,8 +7,9 @@ interface WeatherData {
   hourly: { temperature_2m: number[] };
   daily: { weather_code: number[] };
 }
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cityWeather, fetchViaGeocoding } from "../services/api";
+import SearchForm from "../components/SearchForm";
 
 function Home() {
   const [searhCity, setSearhCity] = useState<GeocodeResult | null>(null);
@@ -72,8 +73,7 @@ function Home() {
 
   return (
     <>
-      <div>
-        <form onSubmit={handelCitySearch}>
+        <SearchForm onSubmit={handelCitySearch}>
           <input
             type="text"
             placeholder="Enter City"
@@ -81,7 +81,7 @@ function Home() {
             onChange={(e) => SetSearchedTerm(e.target.value)}
           />
           <button type="submit">Search</button>
-        </form>
+        </SearchForm>
         {/* error handling */}
         {error && (
           <div>
@@ -100,7 +100,6 @@ function Home() {
             </p>
           </div>
         )}
-      </div>
     </>
   );
 }
