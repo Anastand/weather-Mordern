@@ -1,9 +1,20 @@
-import React from 'react'
+const storedValue = localStorage.getItem("searchedCityWeather");
 
 function Details() {
   return (
-    <div>Details</div>
-  )
+    <div>
+      <div>
+        {!storedValue && (
+          <div>
+            <p>
+              You Dont Have a city selected pls vist <link to="/">Home</link>{" "}
+              and select a city
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default Details
+export default Details;
