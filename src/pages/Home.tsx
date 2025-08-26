@@ -63,7 +63,7 @@ function Home() {
       } catch (error: any) {
         setError("City not found or API error in getting weather details");
         console.log(
-          `the func has failed to get geocode with following Error : ${error.message}`
+          `the func has failed to get geocode with following Error : {error.message}`
         );
       }
     };
