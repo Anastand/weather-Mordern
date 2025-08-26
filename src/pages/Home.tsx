@@ -3,10 +3,10 @@ interface GeocodeResult {
   longitude: number;
   name: string;
 }
-interface WeatherData {
-  hourly: { temperature_2m: number[] };
-  daily: { weather_code: number[] };
-}
+// interface WeatherData {
+//   hourly: { temperature_2m: number[] };
+//   daily: { weather_code: number[] };
+// }
 import React, { useEffect, useState } from "react";
 import { cityWeather, fetchViaGeocoding } from "../services/api";
 import SearchForm from "../components/SearchForm";
@@ -59,7 +59,7 @@ function Home() {
             fetchedAt: Date.now(),
           })
         );
-        navigate("/detail");
+        navigate(`/detail?city=${searchedterm}`);
       } catch (error: any) {
         setError("City not found or API error in getting weather details");
         console.log(
