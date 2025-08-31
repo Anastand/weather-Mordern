@@ -3,32 +3,41 @@ interface GeocodeResult {
   longitude: number;
   name: string;
 }
-// interface WeatherData {
-//   hourly: { temperature_2m: number[] };
-//   daily: { weather_code: number[] };
-// }
+interface GeoResult extends GeocodeResult {
+  country: string;
+  country_code?: string;
+}
 import React, { useEffect, useState } from "react";
-import { cityWeather, fetchViaGeocoding } from "../services/api";
+import {
+  cityWeather,
+  fetchViaGeocoding,
+  SuggestionCall,
+} from "../services/api";
 import SearchForm from "../components/SearchForm";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate(); // cant declare in any block
   const [CitySearched, setCitySearched] = useState<GeocodeResult | null>(null);
-  // const [cityweatherData, setCityWeatherData] = useState<WeatherData | null>(
-  //   null
-  // );
   const [error, setError] = useState<string | null>(null);
-  const [searchedterm, SetSearchedTerm] = useState<any>("");
+  const [query, Setquery] = useState<string>("");
+  // ---
+  const [suggestions, setsuggestions] = useState<GeoResult[]>();
+  const [loadingSug, setLoadingSug] = useState(false);
+  const [sugError, setSugError] = useState<string | null>(null);
 
   // this function fetches the data of the searched city
   const geocode = async () => {
     try {
-      const geocodeCity = await fetchViaGeocoding(searchedterm);
+      const geocodeCity = await fetchViaGeocoding(query);
+      const check = await SuggestionCall(query);
+      const checkv1 = check;
       const cityInfo = geocodeCity;
       console.log("here form geocode function ");
       console.log(cityInfo);
       console.log(cityInfo.name);
+      console.log("here");
+      console.log(checkv1);
       console.log("end of geocode func");
       setCitySearched(cityInfo);
     } catch (error: any) {
@@ -59,7 +68,7 @@ function Home() {
             fetchedAt: Date.now(),
           })
         );
-        navigate(`/detail?city=${searchedterm}`);
+        navigate(`/detail?city=${encodeURIComponent(CitySearched.name)}`);
       } catch (error: any) {
         setError("City not found or API error in getting weather details");
         console.log(
@@ -74,7 +83,7 @@ function Home() {
 
   const handelCitySearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchedterm) return;
+    if (!query) return;
     try {
       geocode();
     } catch (error: any) {
@@ -91,15 +100,15 @@ function Home() {
         <input
           type="text"
           placeholder="Enter City"
-          value={searchedterm}
-          onChange={(e) => SetSearchedTerm(e.target.value)}
+          value={query}
+          onChange={(e) => Setquery(e.target.value)}
         />
         <button type="submit">Search</button>
       </SearchForm>
       {/* error handling */}
       {error && (
         <div>
-          <p>we suffered from an error ${error} pls reload the page</p>
+          <p>we suffered from an error {error}. Please reload the page.</p>
         </div>
       )}
     </>

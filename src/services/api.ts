@@ -9,6 +9,17 @@ export const fetchViaGeocoding = async (cityName: string) => {
   // console.log(data);
   return data.results[0];
 };
+export const SuggestionCall = async (cityquery: string) => {
+  const response = await fetch(
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+      cityquery
+    )}&count=10&language=en&format=json`
+  );
+
+  const data = await response.json();
+  // console.log(data);
+  return data.results;
+};
 
 export const cityWeather = async (lat: number, long: number) => {
   const res = await fetch(
