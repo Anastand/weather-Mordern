@@ -18,6 +18,8 @@ function Home() {
   const [suggestions, setsuggestions] = useState<GeoResult[]>([]);
   const [loadingSug, setLoadingSug] = useState(false);
   const [sugError, setSugError] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [selected, setSelected] = useState<boolean>(false);
 
   // suggestion effect
   useEffect(() => {
@@ -36,6 +38,7 @@ function Home() {
       const suggestionList = await SuggestionCall(query);
       setsuggestions(suggestionList);
       setLoadingSug(false);
+      setSelected(true);
       console.log(suggestionList);
     }, 200);
     return () => {
@@ -106,7 +109,23 @@ function Home() {
       );
     }
   };
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (suggestions.length === 0) return;
 
+    if (e.key === "ArrowDown") {
+      setActiveIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      setActiveIndex(
+        (prev) => (prev - 1 + suggestions.length) % suggestions.length
+      );
+    } else if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault();
+      const selectedCity = suggestions[activeIndex];
+      Setquery(selectedCity.name);
+      setCitySearched(selectedCity);
+      setsuggestions([]);
+    }
+  };
   return (
     <>
       <SearchForm onSubmit={handelCitySearch}>
@@ -115,6 +134,7 @@ function Home() {
           placeholder="Enter City"
           value={query}
           onChange={(e) => Setquery(e.target.value)}
+          onKeyDown={(e) => handleKeyPress(e)}
         />
         <button type="submit">Search</button>
       </SearchForm>
@@ -127,8 +147,10 @@ function Home() {
       {loadingSug && <div>loading....</div>}
       <SuggestionList
         suggopt={suggestions}
+        selected={selected}
         sugError={sugError}
         loading={loadingSug}
+        activeIndex={activeIndex}
         query={query}
         onselect={(city) => {
           Setquery(city.name);
