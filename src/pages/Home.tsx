@@ -1,8 +1,17 @@
 import type { GeoResult, GeocodeResult } from "../types";
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   cityWeather,
   fetchViaGeocoding,
@@ -130,40 +139,51 @@ function Home() {
   };
   return (
     <>
-      <SearchForm onSubmit={handelCitySearch}>
-        <Input
-          type="text"
-          placeholder="Enter City"
-          value={query}
-          onChange={(e) => {
-            Setquery(e.target.value);
-            setSelected(false);
+      <div className="flex items-center justify-center min-h-screen bg-slate-100 p-4">
+        <Card className="w-full max-w-lg p-8 rounded-xl shadow-2xl bg-white">
+          <div className="grid w-full items-center gap-3 mb-4">
+            <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
+              Weather App
+            </h1>
+            <SearchForm onSubmit={handelCitySearch}>
+              <Label htmlFor="city-input">Search Weather</Label>
+              <div className="flex gap-6 mt-2">
+                <Input
+                  type="text"
+                  id="city-input"
+                  placeholder="Enter City"
+                  value={query}
+                  onChange={(e) => {
+                    Setquery(e.target.value);
+                    setSelected(false);
+                  }}
+                  onKeyDown={(e) => handleKeyPress(e)}
+                />
+                <Button type="submit">Search</Button>
+              </div>
+            </SearchForm>
+          </div>
+        </Card>
+        {/* error handling */}
+        {error && (
+          <div>
+            <p>we suffered from an error {error}. Please reload the page.</p>
+          </div>
+        )}
+        <SuggestionList
+          suggopt={suggestions}
+          selected={selected}
+          sugError={sugError}
+          loading={loadingSug}
+          activeIndex={activeIndex}
+          query={query}
+          onselect={(city) => {
+            Setquery(city.name);
+            setCitySearched(city);
+            setSelected(true);
           }}
-          onKeyDown={(e) => handleKeyPress(e)}
         />
-        {/* <button type="submit">Search</button> */}
-        <Button type="submit">Search</Button>
-      </SearchForm>
-      {/* error handling */}
-      {error && (
-        <div>
-          <p>we suffered from an error {error}. Please reload the page.</p>
-        </div>
-      )}
-      {loadingSug && <div>loading....</div>}
-      <SuggestionList
-        suggopt={suggestions}
-        selected={selected}
-        sugError={sugError}
-        loading={loadingSug}
-        activeIndex={activeIndex}
-        query={query}
-        onselect={(city) => {
-          Setquery(city.name);
-          setCitySearched(city);
-          setSelected(true);
-        }}
-      />
+      </div>
     </>
   );
 }

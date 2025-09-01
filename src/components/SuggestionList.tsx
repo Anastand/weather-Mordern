@@ -21,7 +21,7 @@ function SuggestionList({
   return (
     <>
       {loading && <div>loading...</div>}
-      {query.length >= 2 && <div>type 3 letters for suggestions</div>}
+      {query && query.length <= 2 && <div>type 3 letters for suggestions</div>}
       {sugError && query.length >= 3 && <div>we are habinf an error </div>}
       {!loading &&
         !sugError &&
