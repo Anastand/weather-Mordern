@@ -22,9 +22,31 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
   const [query, Setquery] = useState<string>("");
   // ---
-  const [suggestions, setsuggestions] = useState<GeoResult[]>();
+  const [suggestions, setsuggestions] = useState<GeoResult[]>([]);
   const [loadingSug, setLoadingSug] = useState(false);
   const [sugError, setSugError] = useState<string | null>(null);
+
+  // suggestion effect
+  useEffect(() => {
+    setsuggestions([]);
+    setSugError(null);
+    if (query.trim().length <= 0) {
+      return;
+    } else if (query.trim().length < 3) {
+      setsuggestions([]);
+      setSugError("Type at least 3 letters");
+      return;
+    }
+    const timer = setTimeout(async () => {
+      console.log("API call for", query);
+      const suggestionList = await SuggestionCall(query);
+      setsuggestions(suggestionList);
+      console.log(suggestionList);
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [query]);
 
   // this function fetches the data of the searched city
   const geocode = async () => {
