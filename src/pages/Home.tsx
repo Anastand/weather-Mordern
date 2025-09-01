@@ -38,7 +38,6 @@ function Home() {
       const suggestionList = await SuggestionCall(query);
       setsuggestions(suggestionList);
       setLoadingSug(false);
-      setSelected(true);
       console.log(suggestionList);
     }, 200);
     return () => {
@@ -133,7 +132,10 @@ function Home() {
           type="text"
           placeholder="Enter City"
           value={query}
-          onChange={(e) => Setquery(e.target.value)}
+          onChange={(e) => {
+            Setquery(e.target.value);
+            setSelected(false);
+          }}
           onKeyDown={(e) => handleKeyPress(e)}
         />
         <button type="submit">Search</button>
@@ -155,6 +157,7 @@ function Home() {
         onselect={(city) => {
           Setquery(city.name);
           setCitySearched(city);
+          setSelected(true);
         }}
       />
     </>
