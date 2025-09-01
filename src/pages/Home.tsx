@@ -1,12 +1,4 @@
-interface GeocodeResult {
-  latitude: number;
-  longitude: number;
-  name: string;
-}
-interface GeoResult extends GeocodeResult {
-  country: string;
-  country_code?: string;
-}
+import type { GeoResult, GeocodeResult } from "../types";
 import React, { useEffect, useState } from "react";
 import {
   cityWeather,
@@ -15,6 +7,7 @@ import {
 } from "../services/api";
 import SearchForm from "../components/SearchForm";
 import { useNavigate } from "react-router-dom";
+import SuggestionList from "../components/SuggestionList";
 
 function Home() {
   const navigate = useNavigate(); // cant declare in any block
@@ -39,10 +32,12 @@ function Home() {
     }
     const timer = setTimeout(async () => {
       console.log("API call for", query);
+      setLoadingSug(true);
       const suggestionList = await SuggestionCall(query);
       setsuggestions(suggestionList);
+      setLoadingSug(false);
       console.log(suggestionList);
-    }, 300);
+    }, 200);
     return () => {
       clearTimeout(timer);
     };
@@ -52,14 +47,10 @@ function Home() {
   const geocode = async () => {
     try {
       const geocodeCity = await fetchViaGeocoding(query);
-      const check = await SuggestionCall(query);
-      const checkv1 = check;
       const cityInfo = geocodeCity;
       console.log("here form geocode function ");
       console.log(cityInfo);
       console.log(cityInfo.name);
-      console.log("here");
-      console.log(checkv1);
       console.log("end of geocode func");
       setCitySearched(cityInfo);
     } catch (error: any) {
@@ -133,6 +124,17 @@ function Home() {
           <p>we suffered from an error {error}. Please reload the page.</p>
         </div>
       )}
+      {loadingSug && <div>loading....</div>}
+      <SuggestionList
+        suggopt={suggestions}
+        sugError={sugError}
+        loading={loadingSug}
+        query={query}
+        onselect={(city) => {
+          Setquery(city.name);
+          setCitySearched(city);
+        }}
+      />
     </>
   );
 }
