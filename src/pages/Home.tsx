@@ -1,5 +1,8 @@
 import type { GeoResult, GeocodeResult } from "../types";
 import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
+
 import {
   cityWeather,
   fetchViaGeocoding,
@@ -128,7 +131,7 @@ function Home() {
   return (
     <>
       <SearchForm onSubmit={handelCitySearch}>
-        <input
+        <Input
           type="text"
           placeholder="Enter City"
           value={query}
@@ -138,7 +141,8 @@ function Home() {
           }}
           onKeyDown={(e) => handleKeyPress(e)}
         />
-        <button type="submit">Search</button>
+        {/* <button type="submit">Search</button> */}
+        <Button type="submit">Search</Button>
       </SearchForm>
       {/* error handling */}
       {error && (
