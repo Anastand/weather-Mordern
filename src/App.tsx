@@ -1,10 +1,10 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, Link } from "react-router-dom";
 import Home from "./pages/Home";
 import Details from "./pages/Details";
 import { Toaster } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home as HomeIcon } from "lucide-react";
 import { useFavorites } from "./context/FavoritesContext";
 import { useState } from "react";
 
@@ -15,8 +15,9 @@ function App() {
 
   return (
     <>
-      {/* Floating toggle button */}
-      <div className="fixed top-4 left-4 z-50">
+      {/* Floating toggle + home buttons */}
+      <div className="fixed top-4 left-4 z-50 flex gap-2">
+        {/* Sidebar Toggle */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -62,6 +63,16 @@ function App() {
             )}
           </SheetContent>
         </Sheet>
+
+        {/* Home Button */}
+        <Link to="/">
+          <Button
+            size="icon"
+            className="rounded-full shadow-md bg-white/30 backdrop-blur-md border border-white/40 text-foreground hover:bg-white/40 transition-colors"
+          >
+            <HomeIcon className="h-5 w-5" />
+          </Button>
+        </Link>
       </div>
 
       {/* Main Routes */}

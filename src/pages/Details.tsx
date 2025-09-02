@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Loader2, Moon, Sun } from "lucide-react";
 import { useFavorites } from "../context/FavoritesContext";
 import { useTheme } from "../context/ThemeProvider";
-import { Home } from "lucide-react";
 
 // Weather codes -> label, icon, background gradient
 const codeToCondition = (
@@ -204,7 +203,7 @@ function Details() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-white">
           <Link to="/" className="w-full sm:w-auto">
             <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">
-              <Home size={26} className="inline-block" /> {weather.city.name}
+              {weather.city.name}
             </h1>
           </Link>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
