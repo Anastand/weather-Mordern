@@ -265,16 +265,23 @@ function Details() {
             Hourly Forecast
           </h2>
           <div className="flex overflow-x-auto gap-4 sm:gap-6 bg-white/20 backdrop-blur-md p-3 sm:p-4 rounded-xl border border-white/20">
-            {hourly.slice(0, 24).map((h, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center min-w-[50px] sm:min-w-[60px] text-center text-white"
-              >
-                <p className="text-xs sm:text-sm">{h.hour}</p>
-                <p className="text-lg sm:text-2xl">{h.icon}</p>
-                <p className="text-sm sm:text-lg font-medium">{h.temp}°</p>
-              </div>
-            ))}
+            {hourly
+              .slice(0, 24)
+              .map(
+                (
+                  h: { hour: string; temp: number; icon: string },
+                  i: number
+                ) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center min-w-[50px] sm:min-w-[60px] text-center text-white"
+                  >
+                    <p className="text-xs sm:text-sm">{h.hour}</p>
+                    <p className="text-lg sm:text-2xl">{h.icon}</p>
+                    <p className="text-sm sm:text-lg font-medium">{h.temp}°</p>
+                  </div>
+                )
+              )}
           </div>
         </div>
 
