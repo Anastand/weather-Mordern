@@ -52,13 +52,13 @@ npm run build
 ---
 
 ## 📚 What I Learned
-	•	How to integrate REST APIs (Open-Meteo for weather & geocoding).
-	•	Managing global state using React Context (Favorites & Theme).
-	•	Implementing dynamic UI updates (backgrounds based on weather).
-	•	Handling localStorage persistence for user preferences.
-	•	Building a responsive, modern UI with TailwindCSS + shadcn/ui.
-	•	Debugging CORS issues and handling API errors gracefully.
-	•	Deploying a full-stack React + Vite app to Vercel.
+- How to integrate REST APIs (Open-Meteo for weather & geocoding)
+- Managing global state using React Context (Favorites & Theme).
+- Implementing dynamic UI updates (backgrounds based on weather
+- Handling localStorage persistence for user preferences.
+- Building a responsive, modern UI with TailwindCSS + shadcn/ui.
+- Debugging CORS issues and handling API errors gracefully.
+- Deploying a full-stack React + Vite app to Vercel.
 
 ### 📄 License
 
