@@ -8,16 +8,18 @@ import { Loader2, Moon, Sun } from "lucide-react";
 import { useFavorites } from "../context/FavoritesContext";
 import { useTheme } from "../context/ThemeProvider";
 
-// Weather codes -> label, icon, background gradient
+// Weather codes -> label, icon, background gradient, text color
 const codeToCondition = (
   code: number,
   isDay: boolean
-): { label: string; icon: string; bg: string } => {
+): { label: string; icon: string; bg: string; text: string; card: string } => {
   if ([0].includes(code))
     return {
       label: "Clear",
       icon: isDay ? "☀️" : "🌙",
       bg: isDay ? "from-blue-400 to-yellow-200" : "from-gray-900 to-blue-900",
+      text: isDay ? "text-gray-900" : "text-white",
+      card: isDay ? "bg-black/10" : "bg-white/20",
     };
 
   if ([1, 2, 3].includes(code))
@@ -25,27 +27,59 @@ const codeToCondition = (
       label: "Cloudy",
       icon: isDay ? "⛅" : "☁️",
       bg: "from-gray-400 to-gray-600",
+      text: "text-white",
+      card: "bg-white/20",
     };
 
   if ([45, 48].includes(code))
-    return { label: "Foggy", icon: "🌫️", bg: "from-gray-300 to-gray-500" };
+    return {
+      label: "Foggy",
+      icon: "🌫️",
+      bg: "from-gray-300 to-gray-500",
+      text: "text-gray-900",
+      card: "bg-black/10",
+    };
 
   if ([51, 53, 55, 61, 63, 65].includes(code))
-    return { label: "Rain", icon: "🌧️", bg: "from-blue-600 to-gray-700" };
+    return {
+      label: "Rain",
+      icon: "🌧️",
+      bg: "from-blue-600 to-gray-700",
+      text: "text-white",
+      card: "bg-white/20",
+    };
 
   if ([71, 73, 75, 77].includes(code))
-    return { label: "Snow", icon: "❄️", bg: "from-blue-200 to-white" };
+    return {
+      label: "Snow",
+      icon: "❄️",
+      bg: "from-blue-200 to-white",
+      text: "text-gray-900",
+      card: "bg-black/10",
+    };
 
   if ([95, 96, 99].includes(code))
-    return { label: "Storm", icon: "⛈️", bg: "from-gray-800 to-black" };
+    return {
+      label: "Storm",
+      icon: "⛈️",
+      bg: "from-gray-800 to-black",
+      text: "text-white",
+      card: "bg-white/20",
+    };
 
-  return { label: "Unknown", icon: "❓", bg: "from-slate-200 to-slate-400" };
+  return {
+    label: "Unknown",
+    icon: "❓",
+    bg: "from-slate-200 to-slate-400",
+    text: "text-gray-900",
+    card: "bg-black/10",
+  };
 };
 
 function Details() {
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false); // refresh button
-  const [fetchingCity, setFetchingCity] = useState(true); // loader while fetching city
+  const [loading, setLoading] = useState(false);
+  const [fetchingCity, setFetchingCity] = useState(true);
 
   const { favorites, addFavorite, removeFavorite } = useFavorites();
   const { theme, toggleTheme } = useTheme();
@@ -79,7 +113,7 @@ function Details() {
       };
       setWeather(newdata);
       toast.success(`Weather updated for ${weather.city.name}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch weather. Try again.");
       setError("Failed to fetch weather. Try again.");
     } finally {
@@ -94,14 +128,12 @@ function Details() {
     const saved = localStorage.getItem("searchedCityWeather");
     const parsed = saved ? JSON.parse(saved) : null;
 
-    // If cached city matches, reuse it
     if (parsed && parsed.city?.name.toLowerCase() === city.toLowerCase()) {
       setWeather(parsed);
       setFetchingCity(false);
       return;
     }
 
-    // Otherwise fetch city details + weather
     (async () => {
       try {
         setFetchingCity(true);
@@ -121,10 +153,10 @@ function Details() {
 
         setWeather(newData);
         localStorage.setItem("searchedCityWeather", JSON.stringify(newData));
-      } catch (err) {
+      } catch {
         setError("Couldn’t fetch weather for " + city);
       } finally {
-        setFetchingCity(false); // stop loader
+        setFetchingCity(false);
       }
     })();
   }, [city]);
@@ -142,12 +174,11 @@ function Details() {
   const currentTemp =
     currentHourIndex !== -1 ? hourlyTemps[currentHourIndex] : "-";
 
-  // Background condition
   const currentCode =
     weather?.cityWeather?.hourly?.weather_code?.[currentHourIndex] ?? 0;
   const condition = codeToCondition(currentCode, isDayNow);
 
-  // 🔥 Loader screen while fetching a new city
+  // Loader
   if (fetchingCity) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-slate-200 to-slate-400">
@@ -198,9 +229,11 @@ function Details() {
     <div
       className={`min-h-screen w-full bg-gradient-to-b ${condition.bg} flex items-start justify-center`}
     >
-      <div className="container mx-auto px-4 pt-12 pb-6 max-w-3xl space-y-8">
+      <div
+        className={`container mx-auto px-4 pt-12 pb-6 max-w-3xl space-y-8 ${condition.text}`}
+      >
         {/* Top section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-white">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Link to="/" className="w-full sm:w-auto">
             <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">
               {weather.city.name}
@@ -210,7 +243,7 @@ function Details() {
             <Button
               onClick={refreshWeather}
               disabled={loading}
-              className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm sm:text-base"
+              className="bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
             >
               {loading ? (
                 <Loader2 className="animate-spin w-4 h-4 mr-2" />
@@ -225,14 +258,14 @@ function Details() {
                   ? removeFavorite(weather.city.name)
                   : addFavorite(weather.city.name)
               }
-              className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm sm:text-base"
+              className="bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
             >
               {isFav ? "Remove Fav" : "Add Fav"}
             </Button>
             <Button
               variant="outline"
               onClick={toggleTheme}
-              className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm sm:text-base"
+              className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
               {theme === "light" ? "Dark" : "Light"}
@@ -241,15 +274,15 @@ function Details() {
         </div>
 
         {/* Current Weather */}
-        <Card className="mb-6 shadow-lg bg-white/20 backdrop-blur-lg border border-white/20">
+        <Card
+          className={`mb-6 shadow-lg ${condition.card} backdrop-blur-lg border border-white/20`}
+        >
           <CardContent className="flex flex-col items-center justify-center py-6">
-            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-white">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2">
               Current Weather
             </h2>
-            <p className="text-5xl sm:text-6xl font-bold text-white">
-              {currentTemp}°C
-            </p>
-            <p className="text-gray-200 mt-2 text-sm sm:text-base">
+            <p className="text-5xl sm:text-6xl font-bold">{currentTemp}°C</p>
+            <p className="mt-2 text-sm sm:text-base opacity-80">
               {weather.city.name} •{" "}
               {new Date().toLocaleTimeString([], {
                 hour: "2-digit",
@@ -261,10 +294,12 @@ function Details() {
 
         {/* Hourly Forecast */}
         <div>
-          <h2 className="text-base sm:text-lg font-semibold mb-3 text-white">
+          <h2 className="text-base sm:text-lg font-semibold mb-3">
             Hourly Forecast
           </h2>
-          <div className="flex overflow-x-auto gap-4 sm:gap-6 bg-white/20 backdrop-blur-md p-3 sm:p-4 rounded-xl border border-white/20">
+          <div
+            className={`flex overflow-x-auto gap-4 sm:gap-6 ${condition.card} backdrop-blur-md p-3 sm:p-4 rounded-xl border border-white/20`}
+          >
             {hourly
               .slice(0, 24)
               .map(
@@ -274,7 +309,7 @@ function Details() {
                 ) => (
                   <div
                     key={i}
-                    className="flex flex-col items-center min-w-[50px] sm:min-w-[60px] text-center text-white"
+                    className="flex flex-col items-center min-w-[50px] sm:min-w-[60px] text-center"
                   >
                     <p className="text-xs sm:text-sm">{h.hour}</p>
                     <p className="text-lg sm:text-2xl">{h.icon}</p>
@@ -287,7 +322,7 @@ function Details() {
 
         {/* 7-Day Forecast */}
         <div className="mt-6 sm:mt-8">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">
             7-Day Forecast
           </h2>
           <div className="space-y-3">
@@ -304,9 +339,9 @@ function Details() {
               return (
                 <Card
                   key={i}
-                  className="shadow-sm bg-white/20 backdrop-blur-md border border-white/10"
+                  className={`shadow-sm ${cond.card} backdrop-blur-md border border-white/10`}
                 >
-                  <CardContent className="flex items-center justify-between p-3 sm:p-4 text-white text-sm sm:text-base">
+                  <CardContent className="flex items-center justify-between p-3 sm:p-4 text-sm sm:text-base">
                     <p className="w-14 sm:w-16 font-medium">
                       {new Date(d).toLocaleDateString("en-US", {
                         weekday: "short",
