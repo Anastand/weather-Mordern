@@ -3,7 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { cityWeather } from "../services/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 // Apple-like mapping of weather codes to icon + label
 const codeToCondition = (code: number): { label: string; icon: string } => {
   if ([0].includes(code)) return { label: "Clear", icon: "☀️" };
@@ -18,6 +19,7 @@ const codeToCondition = (code: number): { label: string; icon: string } => {
 
 function Details() {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [weather, setWeather] = useState<any>(() => {
     try {
       const raw = localStorage.getItem("searchedCityWeather");
@@ -32,18 +34,26 @@ function Details() {
 
   const refreshWeather = async () => {
     if (!weather) return;
-    let lati = Number(weather.city.latitude);
-    let longi = Number(weather.city.longitude);
+    setLoading(true);
+
     try {
-      const response = await cityWeather(lati, longi);
+      const response = await cityWeather(
+        Number(weather.city.latitude),
+        Number(weather.city.longitude)
+      );
       const newdata = {
         city: weather.city,
         cityWeather: response,
         fetchedAt: Date.now(),
       };
       setWeather(newdata);
-    } catch (error: any) {
-      setError("City not found or API error in getting weather details");
+
+      toast.success(`Weather updated for ${weather.city.name}`);
+    } catch (error) {
+      toast.error("Failed to fetch weather. Try again.");
+      setError("Failed to fetch weather. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
   const currentHour = new Date().getHours();
@@ -143,7 +153,13 @@ function Details() {
       {/* Top section */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{weather.city.name}</h1>
-        <Button onClick={refreshWeather}>Refresh</Button>
+        <Button onClick={refreshWeather} disabled={loading}>
+          {loading ? (
+            <Loader2 className="animate-spin w-4 h-4 mr-2" />
+          ) : (
+            "Refresh"
+          )}
+        </Button>
       </div>
 
       {/* Current Weather */}
