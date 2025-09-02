@@ -14,6 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// theme toggle
+import { useTheme } from "../context/ThemeProvider";
+import { Moon, Sun } from "lucide-react";
+
 function Home() {
   const navigate = useNavigate();
   const [CitySearched, setCitySearched] = useState<GeocodeResult | null>(null);
@@ -26,9 +30,10 @@ function Home() {
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [selected, setSelected] = useState<boolean>(false);
 
+  const { theme, toggleTheme } = useTheme();
+
   // suggestion effect
   useEffect(() => {
-    // if query came from clicking a suggestion, don’t fetch
     if (selected) return;
 
     setsuggestions([]);
@@ -51,6 +56,7 @@ function Home() {
 
     return () => clearTimeout(timer);
   }, [query, selected]);
+
   // fetch weather after selecting a city
   useEffect(() => {
     if (!CitySearched) return;
@@ -104,12 +110,20 @@ function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-100 px-4">
-      <Card className="w-full max-w-lg shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-center text-3xl font-bold">
+    <div className="flex items-center justify-center min-h-screen bg-background text-foreground px-4 transition-colors">
+      <Card className="w-full max-w-lg shadow-lg bg-card text-card-foreground border border-border">
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="text-center text-3xl font-bold w-full">
             🌤️ Weather App
           </CardTitle>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            className="absolute right-4 top-4"
+          >
+            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+          </Button>
         </CardHeader>
 
         <CardContent>
@@ -136,14 +150,12 @@ function Home() {
             </div>
           </form>
 
-          {/* error handling */}
           {error && (
-            <div className="mt-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-md p-2">
+            <div className="mt-3 text-red-600 text-sm bg-red-50 dark:bg-red-900 dark:text-red-200 border border-red-200 dark:border-red-800 rounded-md p-2">
               {error}
             </div>
           )}
 
-          {/* suggestion dropdown */}
           <div className="mt-2">
             <SuggestionList
               suggopt={suggestions}
@@ -155,8 +167,8 @@ function Home() {
               onselect={(city) => {
                 Setquery(city.name);
                 setCitySearched(city);
-                setSelected(true); // mark as selected
-                setsuggestions([]); // clear suggestions after click
+                setSelected(true);
+                setsuggestions([]);
               }}
             />
           </div>
