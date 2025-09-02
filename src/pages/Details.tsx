@@ -138,10 +138,6 @@ function Details() {
       };
     }) || [];
 
-  const today = Math.round(
-    weather.cityWeather?.hourly?.temperature_2m?.[0] ?? "-"
-  );
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl space-y-8">
       {/* Top section */}
@@ -169,16 +165,20 @@ function Details() {
       <div>
         <h2 className="text-lg font-semibold mb-3">Hourly Forecast</h2>
         <div className="flex overflow-x-auto gap-6 bg-gray-50 p-4 rounded-xl">
-          {hourly.slice(0, 24).map((h, i) => (
-            <div
-              key={i}
-              className="flex flex-col items-center min-w-[60px] text-center"
-            >
-              <p className="text-sm text-gray-600">{h.hour}</p>
-              <p className="text-2xl">{h.icon}</p>
-              <p className="text-lg font-medium">{h.temp}°</p>
-            </div>
-          ))}
+          {hourly
+            .slice(0, 24)
+            .map(
+              (h: { hour: string; temp: number; icon: string }, i: number) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center min-w-[60px] text-center"
+                >
+                  <p className="text-sm text-gray-600">{h.hour}</p>
+                  <p className="text-2xl">{h.icon}</p>
+                  <p className="text-lg font-medium">{h.temp}°</p>
+                </div>
+              )
+            )}
         </div>
       </div>
 
@@ -186,37 +186,42 @@ function Details() {
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">7-Day Forecast</h2>
         <div className="space-y-3">
-          {daily.map((d, i) => (
-            <Card key={i} className="shadow-sm">
-              <CardContent className="flex items-center justify-between p-4">
-                {/* Day */}
-                <p className="w-16 font-medium">{d.day}</p>
+          {daily.map(
+            (
+              d: { day: string; min: number; max: number; icon: string },
+              i: number
+            ) => (
+              <Card key={i} className="shadow-sm">
+                <CardContent className="flex items-center justify-between p-4">
+                  {/* Day */}
+                  <p className="w-16 font-medium">{d.day}</p>
 
-                {/* Icon */}
-                <span className="text-2xl">{d.icon}</span>
+                  {/* Icon */}
+                  <span className="text-2xl">{d.icon}</span>
 
-                {/* Temp Range */}
-                <div className="flex-1 mx-4 relative h-2">
-                  {/* gradient bar */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-yellow-400 to-red-500" />
+                  {/* Temp Range */}
+                  <div className="flex-1 mx-4 relative h-2">
+                    {/* gradient bar */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-yellow-400 to-red-500" />
 
-                  {/* min-max highlight */}
-                  <div
-                    className="absolute top-0 h-2 rounded-full bg-white/70"
-                    style={{
-                      left: `${((d.min + 20) / 60) * 100}%`,
-                      width: `${((d.max - d.min) / 60) * 100}%`,
-                    }}
-                  />
-                </div>
+                    {/* min-max highlight */}
+                    <div
+                      className="absolute top-0 h-2 rounded-full bg-white/70"
+                      style={{
+                        left: `${((d.min + 20) / 60) * 100}%`,
+                        width: `${((d.max - d.min) / 60) * 100}%`,
+                      }}
+                    />
+                  </div>
 
-                {/* Min/Max */}
-                <p className="w-28 text-right font-medium">
-                  {d.min}° / <span className="font-bold">{d.max}°</span>
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                  {/* Min/Max */}
+                  <p className="w-28 text-right font-medium">
+                    {d.min}° / <span className="font-bold">{d.max}°</span>
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          )}
         </div>
       </div>
     </div>
