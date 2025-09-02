@@ -1,32 +1,25 @@
 import type { GeoResult, GeocodeResult } from "../types";
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  // CardAction,
-  // CardContent,
-  // CardDescription,
-  // CardFooter,
-  // CardHeader,
-  // CardTitle,
-} from "@/components/ui/card";
 import {
   cityWeather,
   fetchViaGeocoding,
   SuggestionCall,
 } from "../services/api";
-import SearchForm from "../components/SearchForm";
 import { useNavigate } from "react-router-dom";
 import SuggestionList from "../components/SuggestionList";
 
+// shadcn/ui imports
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 function Home() {
-  const navigate = useNavigate(); // cant declare in any block
+  const navigate = useNavigate();
   const [CitySearched, setCitySearched] = useState<GeocodeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, Setquery] = useState<string>("");
-  // ---
+
   const [suggestions, setsuggestions] = useState<GeoResult[]>([]);
   const [loadingSug, setLoadingSug] = useState(false);
   const [sugError, setSugError] = useState<string | null>(null);
@@ -35,8 +28,12 @@ function Home() {
 
   // suggestion effect
   useEffect(() => {
+    // if query came from clicking a suggestion, don’t fetch
+    if (selected) return;
+
     setsuggestions([]);
     setSugError(null);
+
     if (query.trim().length <= 0) {
       return;
     } else if (query.trim().length < 3) {
@@ -44,82 +41,50 @@ function Home() {
       setSugError("Type at least 3 letters");
       return;
     }
+
     const timer = setTimeout(async () => {
-      console.log("API call for", query);
       setLoadingSug(true);
       const suggestionList = await SuggestionCall(query);
       setsuggestions(suggestionList);
       setLoadingSug(false);
-      console.log(suggestionList);
     }, 200);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [query]);
 
-  // this function fetches the data of the searched city
-  const geocode = async () => {
-    try {
-      const geocodeCity = await fetchViaGeocoding(query);
-      const cityInfo = geocodeCity;
-      console.log("here form geocode function ");
-      console.log(cityInfo);
-      console.log(cityInfo.name);
-      console.log("end of geocode func");
-      setCitySearched(cityInfo);
-    } catch (error: any) {
-      setError("error while obtaining you longitude and latitude");
-      console.log(
-        `the func has failed to get geocode with following error : ${error.message}`
-      );
-    }
-  };
-
+    return () => clearTimeout(timer);
+  }, [query, selected]);
+  // fetch weather after selecting a city
   useEffect(() => {
-    // this works to get long and lat data from the searched city as to display weather
-    console.log("here from use effect with lat and long");
     if (!CitySearched) return;
     const lati = Number(CitySearched.latitude);
     const longi = Number(CitySearched.longitude);
-    const getWeather = async (lati: number, longi: number) => {
+    const getWeather = async () => {
       try {
         const response = await cityWeather(lati, longi);
-        const weatherData = response;
-        console.log(weatherData);
-        if (!weatherData) return;
         localStorage.setItem(
           "searchedCityWeather",
           JSON.stringify({
             city: CitySearched,
-            cityWeather: weatherData,
+            cityWeather: response,
             fetchedAt: Date.now(),
           })
         );
         navigate(`/detail?city=${encodeURIComponent(CitySearched.name)}`);
       } catch (error: any) {
         setError("City not found or API error in getting weather details");
-        console.log(
-          `the func has failed to get geocode with following Error : {error.message}`
-        );
       }
     };
-    console.log(longi);
-    console.log(lati);
-    getWeather(lati, longi);
+    getWeather();
   }, [CitySearched]);
 
   const handelCitySearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query) return;
     try {
-      geocode();
+      fetchViaGeocoding(query).then(setCitySearched);
     } catch (error: any) {
       setError("error in handling search");
-      console.log(
-        `the func has failed to handle search with following error : ${error.message}`
-      );
     }
   };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (suggestions.length === 0) return;
 
@@ -137,54 +102,67 @@ function Home() {
       setsuggestions([]);
     }
   };
+
   return (
-    <>
-      <div className="flex items-center justify-center min-h-screen bg-slate-100 p-4">
-        <Card className="w-full max-w-lg p-8 rounded-xl shadow-2xl bg-white">
-          <div className="grid w-full items-center gap-3 mb-4">
-            <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-              Weather App
-            </h1>
-            <SearchForm onSubmit={handelCitySearch}>
+    <div className="flex items-center justify-center min-h-screen bg-slate-100 px-4">
+      <Card className="w-full max-w-lg shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-center text-3xl font-bold">
+            🌤️ Weather App
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handelCitySearch} className="space-y-4">
+            <div className="space-y-2">
               <Label htmlFor="city-input">Search Weather</Label>
-              <div className="flex gap-6 mt-2">
+              <div className="flex gap-2">
                 <Input
                   type="text"
                   id="city-input"
                   placeholder="Enter City"
                   value={query}
+                  autoComplete="off"
                   onChange={(e) => {
                     Setquery(e.target.value);
                     setSelected(false);
                   }}
                   onKeyDown={(e) => handleKeyPress(e)}
                 />
-                <Button type="submit">Search</Button>
+                <Button type="submit" className="shrink-0">
+                  Search
+                </Button>
               </div>
-            </SearchForm>
+            </div>
+          </form>
+
+          {/* error handling */}
+          {error && (
+            <div className="mt-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-md p-2">
+              {error}
+            </div>
+          )}
+
+          {/* suggestion dropdown */}
+          <div className="mt-2">
+            <SuggestionList
+              suggopt={suggestions}
+              selected={selected}
+              sugError={sugError}
+              loading={loadingSug}
+              activeIndex={activeIndex}
+              query={query}
+              onselect={(city) => {
+                Setquery(city.name);
+                setCitySearched(city);
+                setSelected(true); // mark as selected
+                setsuggestions([]); // clear suggestions after click
+              }}
+            />
           </div>
-        </Card>
-        {/* error handling */}
-        {error && (
-          <div>
-            <p>we suffered from an error {error}. Please reload the page.</p>
-          </div>
-        )}
-        <SuggestionList
-          suggopt={suggestions}
-          selected={selected}
-          sugError={sugError}
-          loading={loadingSug}
-          activeIndex={activeIndex}
-          query={query}
-          onselect={(city) => {
-            Setquery(city.name);
-            setCitySearched(city);
-            setSelected(true);
-          }}
-        />
-      </div>
-    </>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

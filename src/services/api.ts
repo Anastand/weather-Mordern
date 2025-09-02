@@ -21,9 +21,17 @@ export const SuggestionCall = async (cityquery: string) => {
   return data.results;
 };
 
+// export const cityWeather = async (lat: number, long: number) => {
+//   const res = await fetch(
+//     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&daily=weather_code&hourly=temperature_2m`
+
+//   );
+//   const dat = await res.json();
+//   return dat;
+// };
 export const cityWeather = async (lat: number, long: number) => {
   const res = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&daily=weather_code&hourly=temperature_2m`
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&daily=temperature_2m_max,temperature_2m_min,weather_code&hourly=temperature_2m`
   );
   const dat = await res.json();
   return dat;

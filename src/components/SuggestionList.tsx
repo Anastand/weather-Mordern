@@ -1,6 +1,7 @@
 import type { GeoResult } from "../types";
+import { Card } from "@/components/ui/card";
 
-interface props {
+interface Props {
   suggopt: GeoResult[];
   sugError: string | null;
   loading: boolean;
@@ -9,6 +10,7 @@ interface props {
   activeIndex: number;
   onselect: (city: GeoResult) => void;
 }
+
 function SuggestionList({
   suggopt,
   sugError,
@@ -17,33 +19,36 @@ function SuggestionList({
   onselect,
   selected,
   activeIndex,
-}: props) {
+}: Props) {
+  // don’t show anything if no query or already selected
+  if (!query || selected) return null;
+
   return (
-    <>
-      {loading && <div>loading...</div>}
-      {query && query.length <= 2 && <div>type 3 letters for suggestions</div>}
-      {sugError && query.length >= 3 && <div>we are habinf an error </div>}
-      {!loading &&
-        !sugError &&
-        suggopt.length == 0 &&
-        query.length >= 3 &&
-        !selected && <div>no result found</div>}
-      {suggopt.length > 0 && (
-        <ul>
-          {suggopt.map((item, i) => (
+    <Card className="absolute mt-2 w-full max-w-md shadow-lg bg-white z-50">
+      <ul className="divide-y divide-gray-200">
+        {loading && (
+          <li className="p-3 text-gray-500 text-center">Loading...</li>
+        )}
+        {sugError && !loading && (
+          <li className="p-3 text-red-500 text-center">{sugError}</li>
+        )}
+        {!loading && !sugError && suggopt.length === 0 && (
+          <li className="p-3 text-gray-500 text-center">No results found</li>
+        )}
+        {!loading &&
+          suggopt.map((item, i) => (
             <li
               key={`${item.name}-${item.latitude}-${item.longitude}`}
-              className={i === activeIndex ? "bg-blue-200" : ""}
-              onClick={() => {
-                onselect(item);
-              }}
+              className={`p-3 cursor-pointer hover:bg-gray-100 ${
+                i === activeIndex ? "bg-blue-100" : ""
+              }`}
+              onClick={() => onselect(item)}
             >
-              {item.name} , {item.country}
+              {item.name}, {item.country}
             </li>
           ))}
-        </ul>
-      )}
-    </>
+      </ul>
+    </Card>
   );
 }
 

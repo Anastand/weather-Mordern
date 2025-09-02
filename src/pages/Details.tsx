@@ -1,18 +1,32 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-// import refreshIcon from "../assets/Refresh CCW Alt 2 Icon.svg";
 import { cityWeather } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+// Apple-like mapping of weather codes to icon + label
+const codeToCondition = (code: number): { label: string; icon: string } => {
+  if ([0].includes(code)) return { label: "Clear", icon: "☀️" };
+  if ([1, 2, 3].includes(code)) return { label: "Cloudy", icon: "⛅" };
+  if ([45, 48].includes(code)) return { label: "Foggy", icon: "🌫️" };
+  if ([51, 53, 55, 61, 63, 65].includes(code))
+    return { label: "Rain", icon: "🌧️" };
+  if ([71, 73, 75, 77].includes(code)) return { label: "Snow", icon: "❄️" };
+  if ([95, 96, 99].includes(code)) return { label: "Storm", icon: "⛈️" };
+  return { label: "Unknown", icon: "❓" };
+};
 
 function Details() {
   const [error, setError] = useState<string | null>(null);
-  const [weather, setWeather] = useState(() => {
+  const [weather, setWeather] = useState<any>(() => {
     try {
       const raw = localStorage.getItem("searchedCityWeather");
       return raw ? JSON.parse(raw) : null;
-    } catch (error) {
+    } catch {
       return null;
     }
   });
+
   const [searchedParm] = useSearchParams();
   const city = searchedParm.get("city");
 
@@ -27,21 +41,30 @@ function Details() {
         cityWeather: response,
         fetchedAt: Date.now(),
       };
-      setWeather(newdata)
-      console.log(newdata);
+      setWeather(newdata);
     } catch (error: any) {
       setError("City not found or API error in getting weather details");
-      console.log(
-        `the func has failed to get geocode with following Error : {error.message}`
-      );
     }
   };
+  const currentHour = new Date().getHours();
+  const hourlyTimes = weather?.cityWeather?.hourly?.time || [];
+  const hourlyTemps = weather?.cityWeather?.hourly?.temperature_2m || [];
+
+  // Match current hour
+  const currentHourIndex = hourlyTimes.findIndex(
+    (t: string) => new Date(t).getHours() === currentHour
+  );
+
+  const currentTemp =
+    currentHourIndex !== -1 ? hourlyTemps[currentHourIndex] : "-";
+
   useEffect(() => {
     const FIVE_MIN = 5 * 60 * 1000;
     if (weather && Date.now() - weather.fetchedAt > FIVE_MIN) {
       refreshWeather();
     }
   }, []);
+
   useEffect(() => {
     if (weather) {
       localStorage.setItem("searchedCityWeather", JSON.stringify(weather));
@@ -50,23 +73,23 @@ function Details() {
 
   if (!city) {
     return (
-      <div>
-        {
-          <div>
-            <p>
-              You Dont Have a city selected pls vist <Link to="/"> Home </Link>{" "}
-              and select a city
-            </p>
-          </div>
-        }
+      <div className="p-6 text-center">
+        <p>
+          No city selected. Please visit{" "}
+          <Link to="/" className="underline text-blue-600">
+            Home
+          </Link>
+        </p>
       </div>
     );
   }
   if (error) {
     return (
-      <div>
-        <p className="text-red-500">{error}</p>
-        <Link to="/">Go back Home</Link>
+      <div className="p-6 text-center text-red-500">
+        <p>{error}</p>
+        <Link to="/" className="underline text-blue-600">
+          Go back Home
+        </Link>
       </div>
     );
   }
@@ -74,35 +97,128 @@ function Details() {
     !weather ||
     !weather.city ||
     !weather.city.name ||
-    !city ||
     weather.city.name.toLowerCase() !== city.toLowerCase()
   ) {
     return (
-      <div>
+      <div className="p-6 text-center">
         <p>
-          Couldn't find weather for <strong>{city}</strong>. Try searching again
-          from <Link to="/">Home</Link>.
+          Couldn’t find weather for <strong>{city}</strong>. Try again on{" "}
+          <Link to="/" className="underline text-blue-600">
+            Home
+          </Link>
         </p>
       </div>
     );
   }
+
+  // Hourly forecast
+  const hourly =
+    weather?.cityWeather?.hourly?.time?.map((t: string, i: number) => {
+      const hour = new Date(t).getHours();
+      const code = weather.cityWeather?.hourly?.weather_code?.[i] ?? 0;
+      const cond = codeToCondition(code);
+      return {
+        hour: `${hour}:00`,
+        temp: Math.round(weather.cityWeather?.hourly?.temperature_2m?.[i]),
+        icon: cond.icon,
+      };
+    }) || [];
+
+  // Daily forecast
+  const daily =
+    weather?.cityWeather?.daily?.time?.map((d: string, i: number) => {
+      const cond = codeToCondition(
+        weather.cityWeather?.daily?.weather_code?.[i] ?? 0
+      );
+      return {
+        day: new Date(d).toLocaleDateString("en-US", { weekday: "short" }),
+        min: Math.round(weather.cityWeather?.daily?.temperature_2m_min?.[i]),
+        max: Math.round(weather.cityWeather?.daily?.temperature_2m_max?.[i]),
+        icon: cond.icon,
+      };
+    }) || [];
+
+  const today = Math.round(
+    weather.cityWeather?.hourly?.temperature_2m?.[0] ?? "-"
+  );
+
   return (
-    <div>
-      {weather && (
-        <div>
-          <p>
-            Weather for <strong>{weather?.city?.name ?? "-"}</strong> is:{" "}
-            {weather?.cityWeather?.hourly?.temperature_2m?.[0] ?? "-"}°C
+    <div className="container mx-auto px-4 py-6 max-w-3xl space-y-8">
+      {/* Top section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">{weather.city.name}</h1>
+        <Button onClick={refreshWeather}>Refresh</Button>
+      </div>
+
+      {/* Current Weather */}
+      <Card className="mb-6 shadow-lg">
+        <CardContent className="flex flex-col items-center justify-center py-6">
+          <h2 className="text-xl font-semibold mb-2">Current Weather</h2>
+          <p className="text-6xl font-bold">{currentTemp}°C</p>
+          <p className="text-gray-500 mt-2">
+            {weather.city.name} •{" "}
+            {new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
-          <button
-            className="outline bg-sky-200 active:bg-sky-700"
-            onClick={refreshWeather}
-          >
-            {/* <img src={refreshIcon} alt="refresh" width={24} height={24} /> */}
-            refresh
-          </button>
+        </CardContent>
+      </Card>
+
+      {/* Hourly Forecast */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Hourly Forecast</h2>
+        <div className="flex overflow-x-auto gap-6 bg-gray-50 p-4 rounded-xl">
+          {hourly.slice(0, 24).map((h, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center min-w-[60px] text-center"
+            >
+              <p className="text-sm text-gray-600">{h.hour}</p>
+              <p className="text-2xl">{h.icon}</p>
+              <p className="text-lg font-medium">{h.temp}°</p>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
+
+      {/* 7-Day Forecast */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">7-Day Forecast</h2>
+        <div className="space-y-3">
+          {daily.map((d, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardContent className="flex items-center justify-between p-4">
+                {/* Day */}
+                <p className="w-16 font-medium">{d.day}</p>
+
+                {/* Icon */}
+                <span className="text-2xl">{d.icon}</span>
+
+                {/* Temp Range */}
+                <div className="flex-1 mx-4 relative h-2">
+                  {/* gradient bar */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-yellow-400 to-red-500" />
+
+                  {/* min-max highlight */}
+                  <div
+                    className="absolute top-0 h-2 rounded-full bg-white/70"
+                    style={{
+                      left: `${((d.min + 20) / 60) * 100}%`,
+                      width: `${((d.max - d.min) / 60) * 100}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Min/Max */}
+                <p className="w-28 text-right font-medium">
+                  {d.min}° / <span className="font-bold">{d.max}°</span>
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
