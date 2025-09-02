@@ -4,6 +4,7 @@ import {
   cityWeather,
   fetchViaGeocoding,
   SuggestionCall,
+  reverseGeocoding, // ✅ import reverse geocoding
 } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import SuggestionList from "../components/SuggestionList";
@@ -16,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // theme toggle
 import { useTheme } from "../context/ThemeProvider";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, MapPin, Loader2 } from "lucide-react";
 
 function Home() {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ function Home() {
   const [sugError, setSugError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [selected, setSelected] = useState<boolean>(false);
+
+  const [locating, setLocating] = useState(false); // loader for "Use My Location"
 
   const { theme, toggleTheme } = useTheme();
 
@@ -109,6 +112,66 @@ function Home() {
     }
   };
 
+  // 📍 use my location
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation not supported in your browser.");
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          // 1. fetch weather
+          const response = await cityWeather(lat, lon);
+
+          // 2. reverse lookup for city name
+          let cityData;
+          try {
+            const geoRes = await reverseGeocoding(lat, lon);
+            cityData = {
+              name: geoRes?.name || "My Location",
+              country: geoRes?.country || "",
+              latitude: lat,
+              longitude: lon,
+            };
+          } catch {
+            console.warn("Reverse geocoding failed");
+            cityData = {
+              name: "My Location",
+              latitude: lat,
+              longitude: lon,
+            };
+          }
+
+          // 3. save + navigate
+          localStorage.setItem(
+            "searchedCityWeather",
+            JSON.stringify({
+              city: cityData,
+              cityWeather: response,
+              fetchedAt: Date.now(),
+            })
+          );
+
+          navigate(`/detail?city=${encodeURIComponent(cityData.name)}`);
+        } catch {
+          setError("Failed to fetch weather for your location.");
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setError("Unable to retrieve your location.");
+        setLocating(false);
+      }
+    );
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground px-4 transition-colors">
       <Card className="w-full max-w-lg shadow-lg bg-card text-card-foreground border border-border">
@@ -149,6 +212,28 @@ function Home() {
               </div>
             </div>
           </form>
+
+          {/* 📍 Use My Location Button */}
+          <div className="mt-4">
+            <Button
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={handleUseMyLocation}
+              disabled={locating}
+            >
+              {locating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Locating...
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-4 h-4" />
+                  Use My Location
+                </>
+              )}
+            </Button>
+          </div>
 
           {error && (
             <div className="mt-3 text-red-600 text-sm bg-red-50 dark:bg-red-900 dark:text-red-200 border border-red-200 dark:border-red-800 rounded-md p-2">
