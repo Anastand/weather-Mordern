@@ -198,17 +198,19 @@ function Details() {
     <div
       className={`min-h-screen w-full bg-gradient-to-b ${condition.bg} flex items-start justify-center`}
     >
-      <div className="container mx-auto px-4 pt-12 py-6 max-w-3xl space-y-8">
+      <div className="container mx-auto px-4 pt-12 pb-6 max-w-3xl space-y-8">
         {/* Top section */}
-        <div className="flex justify-between items-center text-white">
-          <Link to="/">
-            <h1 className="text-3xl font-bold">{weather.city.name}</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-white">
+          <Link to="/" className="w-full sm:w-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">
+              {weather.city.name}
+            </h1>
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
             <Button
               onClick={refreshWeather}
               disabled={loading}
-              className="bg-white/20 backdrop-blur-md text-white border border-white/30"
+              className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm sm:text-base"
             >
               {loading ? (
                 <Loader2 className="animate-spin w-4 h-4 mr-2" />
@@ -223,14 +225,14 @@ function Details() {
                   ? removeFavorite(weather.city.name)
                   : addFavorite(weather.city.name)
               }
-              className="bg-white/20 backdrop-blur-md text-white border border-white/30"
+              className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm sm:text-base"
             >
-              {isFav ? "Remove Favorite" : "Add to Favorites"}
+              {isFav ? "Remove Fav" : "Add Fav"}
             </Button>
             <Button
               variant="outline"
               onClick={toggleTheme}
-              className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white"
+              className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm sm:text-base"
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
               {theme === "light" ? "Dark" : "Light"}
@@ -241,11 +243,13 @@ function Details() {
         {/* Current Weather */}
         <Card className="mb-6 shadow-lg bg-white/20 backdrop-blur-lg border border-white/20">
           <CardContent className="flex flex-col items-center justify-center py-6">
-            <h2 className="text-xl font-semibold mb-2 text-white">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-white">
               Current Weather
             </h2>
-            <p className="text-6xl font-bold text-white">{currentTemp}°C</p>
-            <p className="text-gray-200 mt-2">
+            <p className="text-5xl sm:text-6xl font-bold text-white">
+              {currentTemp}°C
+            </p>
+            <p className="text-gray-200 mt-2 text-sm sm:text-base">
               {weather.city.name} •{" "}
               {new Date().toLocaleTimeString([], {
                 hour: "2-digit",
@@ -257,40 +261,33 @@ function Details() {
 
         {/* Hourly Forecast */}
         <div>
-          <h2 className="text-lg font-semibold mb-3 text-white">
+          <h2 className="text-base sm:text-lg font-semibold mb-3 text-white">
             Hourly Forecast
           </h2>
-          <div className="flex overflow-x-auto gap-6 bg-white/20 backdrop-blur-md p-4 rounded-xl border border-white/20">
-            {hourly
-              .slice(0, 24)
-              .map(
-                (
-                  h: { hour: string; temp: number; icon: string },
-                  i: number
-                ) => (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center min-w-[60px] text-center text-white"
-                  >
-                    <p className="text-sm">{h.hour}</p>
-                    <p className="text-2xl">{h.icon}</p>
-                    <p className="text-lg font-medium">{h.temp}°</p>
-                  </div>
-                )
-              )}
+          <div className="flex overflow-x-auto gap-4 sm:gap-6 bg-white/20 backdrop-blur-md p-3 sm:p-4 rounded-xl border border-white/20">
+            {hourly.slice(0, 24).map((h, i) => (
+              <div
+                key={i}
+                className="flex flex-col items-center min-w-[50px] sm:min-w-[60px] text-center text-white"
+              >
+                <p className="text-xs sm:text-sm">{h.hour}</p>
+                <p className="text-lg sm:text-2xl">{h.icon}</p>
+                <p className="text-sm sm:text-lg font-medium">{h.temp}°</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* 7-Day Forecast */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4 text-white">
+        <div className="mt-6 sm:mt-8">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
             7-Day Forecast
           </h2>
           <div className="space-y-3">
             {weather?.cityWeather?.daily?.time?.map((d: string, i: number) => {
               const dayCode =
                 weather.cityWeather?.daily?.weather_code?.[i] ?? 0;
-              const cond = codeToCondition(dayCode, true); // assume daytime for daily summary
+              const cond = codeToCondition(dayCode, true);
               const min = Math.round(
                 weather.cityWeather?.daily?.temperature_2m_min?.[i]
               );
@@ -302,14 +299,14 @@ function Details() {
                   key={i}
                   className="shadow-sm bg-white/20 backdrop-blur-md border border-white/10"
                 >
-                  <CardContent className="flex items-center justify-between p-4 text-white">
-                    <p className="w-16 font-medium">
+                  <CardContent className="flex items-center justify-between p-3 sm:p-4 text-white text-sm sm:text-base">
+                    <p className="w-14 sm:w-16 font-medium">
                       {new Date(d).toLocaleDateString("en-US", {
                         weekday: "short",
                       })}
                     </p>
-                    <span className="text-2xl">{cond.icon}</span>
-                    <div className="flex-1 mx-4 relative h-2">
+                    <span className="text-xl sm:text-2xl">{cond.icon}</span>
+                    <div className="flex-1 mx-3 sm:mx-4 relative h-2">
                       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-yellow-400 to-red-500 opacity-60" />
                       <div
                         className="absolute top-0 h-2 rounded-full bg-white/80"
@@ -319,7 +316,7 @@ function Details() {
                         }}
                       />
                     </div>
-                    <p className="w-28 text-right font-medium">
+                    <p className="w-24 sm:w-28 text-right font-medium">
                       {min}° / <span className="font-bold">{max}°</span>
                     </p>
                   </CardContent>
