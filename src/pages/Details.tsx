@@ -243,7 +243,11 @@ function Details() {
             <Button
               onClick={refreshWeather}
               disabled={loading}
-              className="bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
+              className={`${
+                condition.text.includes("white")
+                  ? "bg-white/20 text-white hover:bg-white/30"
+                  : "bg-black/20 text-black hover:bg-black/30"
+              } backdrop-blur-md border border-white/30 text-sm sm:text-base`}
             >
               {loading ? (
                 <Loader2 className="animate-spin w-4 h-4 mr-2" />
@@ -251,6 +255,7 @@ function Details() {
                 "Refresh"
               )}
             </Button>
+
             <Button
               variant={isFav ? "destructive" : "default"}
               onClick={() =>
@@ -258,14 +263,23 @@ function Details() {
                   ? removeFavorite(weather.city.name)
                   : addFavorite(weather.city.name)
               }
-              className="bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
+              className={`${
+                condition.text.includes("white")
+                  ? "bg-white/20 text-white hover:bg-white/30"
+                  : "bg-black/20 text-black hover:bg-black/30"
+              } backdrop-blur-md border border-white/30 text-sm sm:text-base`}
             >
               {isFav ? "Remove Fav" : "Add Fav"}
             </Button>
+
             <Button
               variant="outline"
               onClick={toggleTheme}
-              className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-sm sm:text-base"
+              className={`flex items-center gap-2 ${
+                condition.text.includes("white")
+                  ? "bg-white/20 text-white hover:bg-white/30"
+                  : "bg-black/20 text-black hover:bg-black/30"
+              } backdrop-blur-md border border-white/30 text-sm sm:text-base`}
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
               {theme === "light" ? "Dark" : "Light"}
